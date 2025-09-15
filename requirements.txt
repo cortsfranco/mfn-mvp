@@ -1,0 +1,28 @@
+# Dependencias de Azure (estas son estables)
+azure-functions==1.17.0
+azure-identity==1.15.0
+azure-search-documents
+azure-storage-blob==12.19.0
+azure-ai-formrecognizer==3.3.0
+
+# Dependencias de IA y Web (dejamos que pip elija las versiones compatibles)
+openai
+langchain
+langchain-openai
+langchain-community
+langchain-core
+langgraph  
+python-dotenv
+pydantic
+fastapi
+uvicorn
+
+# Otras utilidades
+requests
+aiohttp
+structlog
+azure-monitor-opentelemetry
+pytest
+pytest-asyncio
+numpy
+python-multipart
