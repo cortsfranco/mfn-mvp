@@ -23,13 +23,20 @@ def get_openai_client() -> AzureChatOpenAI:
     global _openai_client
     if _openai_client is None:
         try:
+            # Validamos que todas las variables necesarias existan
+            endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
+            api_key = os.getenv("AZURE_OPENAI_API_KEY")
+            deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME")
+            api_version = os.getenv("OPENAI_API_VERSION")
+
+            if not all([endpoint, api_key, deployment, api_version]):
+                raise ValueError("Faltan variables de entorno para Azure OpenAI.")
+
             _openai_client = AzureChatOpenAI(
-                azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
-                api_key=os.getenv("AZURE_OPENAI_API_KEY"),
-                azure_deployment=os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME"),
-                # --- ESTA ES LA LÍNEA CORREGIDA ---
-                # Usamos la versión de API que requiere el modelo o3-mini (Phi-3)
-                api_version="2024-12-01-preview"
+                azure_endpoint=endpoint,
+                api_key=api_key,
+                azure_deployment=deployment,
+                api_version=api_version # <-- CORREGIDO: Se lee del .env
             )
             logger.info("Cliente de Azure OpenAI inicializado correctamente")
         except Exception as e:
@@ -45,12 +52,14 @@ def get_search_client() -> SearchClient:
     global _search_client
     if _search_client is None:
         try:
-            endpoint = os.getenv("AZURE_SEARCH_ENDPOINT")
+            endpoint = os.getenv("AZURE_SEARCH_ENDPOINT") # <-- CORREGIDO: Nombre simplificado
             key = os.getenv("AZURE_SEARCH_ADMIN_KEY")
-            index_name = os.getenv("AZURE_SEARCH_INDEX_NAME")
+            index_name = os.getenv("AZURE_SEARCH_INDEX_NAME") # <-- CORREGIDO: Se valida que exista
 
             if not all([endpoint, key, index_name]):
-                raise ValueError("Revisa tus variables de entorno. Faltan valores para Azure Search.")
+                error_msg = "Revisa tus variables de entorno. Faltan valores para Azure Search (ENDPOINT, ADMIN_KEY, INDEX_NAME)."
+                logger.error({"event": error_msg})
+                raise ValueError(error_msg)
 
             credential = AzureKeyCredential(key)
             _search_client = SearchClient(
@@ -58,7 +67,7 @@ def get_search_client() -> SearchClient:
                 index_name=index_name,
                 credential=credential
             )
-            logger.info("Cliente de Azure Cognitive Search inicializado correctamente desde variables de entorno")
+            logger.info("Cliente de Azure Cognitive Search inicializado correctamente")
         except Exception as e:
             logger.error(f"Error inicializando cliente de Azure Cognitive Search: {str(e)}")
             raise
